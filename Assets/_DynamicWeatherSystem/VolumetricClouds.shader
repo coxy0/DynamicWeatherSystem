@@ -38,20 +38,20 @@ Shader "Custom/VolumetricClouds"
 
             float4 frag(Varyings input) : SV_Target
             {
-                // half4 colour = SAMPLE_TEXTURE2D(_BlitTexture, sampler_LinearClamp, input.texcoord);
-
                 float4 colour = SAMPLE_TEXTURE2D(_BlitTexture, sampler_LinearClamp, input.texcoord);
 
                 float depth = SampleSceneDepth(input.texcoord);
                 float3 worldPos = ComputeWorldSpacePosition(input.texcoord, depth, UNITY_MATRIX_I_VP);
+
                 float3 ro = _WorldSpaceCameraPos;
                 float3 rd = normalize(worldPos - _WorldSpaceCameraPos);
 
                 float2 rayBoxInfo = rayBoxDst(_BoundsMin, _BoundsMax, ro, rd);
                 float dstToBox = rayBoxInfo.x;
                 float dstInsideBox = rayBoxInfo.y;
-                bool rayHitBox = dstInsideBox > 0;
-                if (!rayHitBox) colour = 0;
+
+                bool rayHitBox = dstInsideBox > 0 && distance(worldPos, ro) > dstToBox;
+                if (rayHitBox) colour = 0;
 
                 return colour;
             }
